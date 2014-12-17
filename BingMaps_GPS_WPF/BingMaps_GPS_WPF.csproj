@@ -78,16 +78,16 @@
     <Compile Include="Command\RelayCommand.cs" />
     <Compile Include="Common\CommonApp.cs" />
     <Compile Include="Common\Consts.cs" />
-    <Compile Include="Design\DesignDataService.cs" />
-    <Compile Include="Model\Class1.cs" />
+    <Compile Include="Base\DisposableModelBase.cs" />
+    <Compile Include="Model\GeoCoordinateManager.cs" />
     <Compile Include="Model\Pin.cs" />
-    <Compile Include="Model\DataItem.cs" />
-    <Compile Include="Model\DataService.cs" />
-    <Compile Include="Model\IDataService.cs" />
+    <Compile Include="Base\ValidatableModelBase.cs" />
     <Compile Include="UI\ColumnDefinitionExtended.cs" />
     <Compile Include="UI\RowDefinitionExtended.cs" />
+    <Compile Include="Base\ValidatableViewModelBase.cs" />
+    <Compile Include="ViewModel\ValidationRules.cs" />
     <Compile Include="ViewModel\MainViewModel.cs" />
-    <Compile Include="ViewModel\DisposableViewModelBase.cs" />
+    <Compile Include="Base\DisposableViewModelBase.cs" />
     <Compile Include="ViewModel\ViewModelLocator.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
@@ -143,6 +143,7 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Resource>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

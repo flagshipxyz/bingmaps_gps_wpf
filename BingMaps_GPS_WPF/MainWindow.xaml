@@ -4,12 +4,13 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:ignore="http://www.ignore.com"
+        mc:Ignorable="d ignore"
         xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
         xmlns:cmd="clr-namespace:GalaSoft.MvvmLight.Command;assembly=GalaSoft.MvvmLight.Platform"
         xmlns:m="clr-namespace:Microsoft.Maps.MapControl.WPF;assembly=Microsoft.Maps.MapControl.WPF"
         xmlns:s="clr-namespace:System;assembly=mscorlib"
         xmlns:extended="clr-namespace:GridTest.Extended"
-        mc:Ignorable="d ignore"
+        xmlns:vm="clr-namespace:BingMaps_GPS_WPF.ViewModel"
         Height="600"
         Width="1000"
         Title="BingMaps+GPS"
@@ -84,12 +85,12 @@
         </ResourceDictionary>
     </Window.Resources>
 
-    <i:Interaction.Triggers>
+    <!--<i:Interaction.Triggers>
         <i:EventTrigger EventName="Closed">
             <i:InvokeCommandAction Command="{Binding Command_Closed}" >
             </i:InvokeCommandAction>
         </i:EventTrigger>
-    </i:Interaction.Triggers>
+    </i:Interaction.Triggers>-->
 
     <DockPanel LastChildFill="True" >
         <Grid DockPanel.Dock="Top" Height="28" >
@@ -190,8 +191,7 @@
             </GridSplitter>
 
             <m:Map Grid.Column="2" x:Name="map" ZoomLevel="{Binding ZoomLevel}" Center="{Binding Location ,Mode=TwoWay}"
-               ContextMenu="{StaticResource commonContextMenu}" CredentialsProvider="{Binding CredentialsProvider}"
-                >
+               ContextMenu="{StaticResource commonContextMenu}" CredentialsProvider="{Binding CredentialsProvider}">
                 <m:MapItemsControl ItemsSource="{Binding Pins}" ItemTemplate="{StaticResource PinTemplate}"/>
             </m:Map>
 
@@ -242,9 +242,19 @@
                 
                 <StackPanel Grid.Row="2">
                     <Label Content="MovementThreshold:"></Label>
-                    <TextBox Width="Auto" Text="{Binding MovementThresholdTemp,UpdateSourceTrigger=PropertyChanged}" 
+                    <TextBox Width="Auto" Text="{Binding MovementThreshold,UpdateSourceTrigger=PropertyChanged}"
                          Style="{StaticResource ToolTipErrorStyle}">
                     </TextBox>
+                    <!--<TextBox Width="Auto" 
+                         Style="{StaticResource ToolTipErrorStyle}">
+                        <TextBox.Text>
+                            <Binding Path="MovementThreshold" UpdateSourceTrigger="PropertyChanged">
+                                <Binding.ValidationRules>
+                                    <vm:RequiredDoubleValidation />
+                                </Binding.ValidationRules>
+                            </Binding>
+                        </TextBox.Text>
+                    </TextBox>-->
                 </StackPanel>
             </Grid>
         </Grid>

@@ -1,6 +1,7 @@
 ﻿using GalaSoft.MvvmLight.Command;
 
 using System;
+using System.Linq;
 using System.Windows;
 using System.Windows.Input;
 using System.Collections.ObjectModel;
@@ -8,84 +9,115 @@ using System.Collections.Generic;
 using System.Device.Location;
 using System.IO;
 using BingMaps_GPS_WPF.Model;
-using Microsoft.Win32;
 using Microsoft.Maps.MapControl.WPF;
 
-using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Runtime.CompilerServices;
 
 namespace BingMaps_GPS_WPF.ViewModel
 {
+    // TODO BingMapsに関する操作と状態の管理機能を別クラスに分ける
     /// <summary>
     /// This class contains properties that the main View can data bind to.
     /// <para>
     /// See http://www.galasoft.ch/mvvm
     /// </para>
     /// </summary>
-    public class MainViewModel : DisposableViewModelBase, INotifyDataErrorInfo
+    public class MainViewModel : ValidatableViewModelBase
     {
-        private readonly IDataService _dataService;
-
         /// <summary>
         /// Initializes a new instance of the MainViewModel class.
         /// </summary>
-        public MainViewModel(IDataService dataService)
+        public MainViewModel()
         {
-            _dataService = dataService;
-            _dataService.GetData(
-                (item, error) =>
-                {
-                    if (error != null)
-                    {
-                        // Report error here
-                        return;
-                    }
-                });
-
+            _geoCoordinateManager = new GeoCoordinateManager();
+            
+            _geoCoordinateManager.PropertyChanged += _geoCoordinateManager_PropertyChanged;
+            _geoCoordinateManager.ErrorsChanged += _geoCoordinateManager_ErrorsChanged;
+            
             this.Restore();
 
         }
 
-        //public override void Cleanup()
-        //{
-        //    // Clean up if needed
-
-        //    base.Cleanup();
-        //}
-
-        #region Dispose
-
-        private ICommand _command_Closed = null;
-
-        public ICommand Command_Closed
+        /// <summary>
+        /// GeoCoordinateManagerでのプロパティ値変更を同期
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        void _geoCoordinateManager_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
-            get
+            string name = e.PropertyName;
+
+            RaisePropertyChanged(name);
+
+            if (name == GeoCoordinateManager.CurrentPinPropertyName)
             {
-                if (_command_Closed == null)
+                if (_geoCoordinateManager.CurrentPin != null)
                 {
-                    _command_Closed = new RelayCommand(new Action(Closed));
+                    this.Location = _geoCoordinateManager.CurrentPin.Location;
                 }
-                return _command_Closed;
             }
         }
 
-        private void Closed()
+        /// <summary>
+        /// GeoCoordinateManagerでの入力検証結果をマージしてViewに公開
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        void _geoCoordinateManager_ErrorsChanged(object sender, System.ComponentModel.DataErrorsChangedEventArgs e)
         {
+            string name = e.PropertyName;
+
+            System.Collections.Generic.IEnumerable<string> errors = _geoCoordinateManager.GetErrors(name) as System.Collections.Generic.IEnumerable<string>;
+
+            if (errors != null && errors.Count() > 0)
+            {
+                SetErrors(name, errors);
+            }
+            else
+            {
+                ClearErrors(name);
+            }
+        }
+
+        public override void Cleanup()
+        {
+            // Clean up if needed
             this.Save();
 
             this.Dispose();
+
+            base.Cleanup();
         }
+
+        #region Dispose
+
+        //private ICommand _command_Closed = null;
+
+        //public ICommand Command_Closed
+        //{
+        //    get
+        //    {
+        //        if (_command_Closed == null)
+        //        {
+        //            _command_Closed = new RelayCommand(new Action(Closed));
+        //        }
+        //        return _command_Closed;
+        //    }
+        //}
+
+        //private void Closed()
+        //{
+        //    this.Save();
+
+        //    this.Dispose();
+        //}
+
+        private GeoCoordinateManager _geoCoordinateManager = null;
 
         protected override void Dispose(bool disposing)
         {
-            if (_watcher != null)
-            {
-                _watcher.PositionChanged -= _watcher_PositionChanged;
-                _watcher.Dispose();
-                _watcher = null;
-            }
+            _geoCoordinateManager.Dispose();
+            _geoCoordinateManager = null;
 
             base.Dispose(disposing);
         }
@@ -96,32 +128,94 @@ namespace BingMaps_GPS_WPF.ViewModel
         {
             Properties.Settings.Default.Reload();
 
+            // viewmodel
             this.LogPanelWidth = new GridLength(Properties.Settings.Default.LogPanelWidth);
             this.SettingPanelWidth = new GridLength(Properties.Settings.Default.SettingPanelWidth);
-
             this.StatusVisible = Properties.Settings.Default.StatusVisible;
-
             this.CredentialsProviderKey = Properties.Settings.Default.CredentialsProviderKey;
-            this.MovementThreshold = Properties.Settings.Default.MovementThreshold;
-            this.MovementThresholdTemp = this.MovementThreshold;
 
+            // model            
+            this.MovementThreshold = Properties.Settings.Default.MovementThreshold;
             this.GPSLogFilePath = Properties.Settings.Default.GPSLogFilePath;
         }
 
         private void Save()
         {
+            // viewmodel
             Properties.Settings.Default.LogPanelWidth = this.LogPanelWidth.Value;
             Properties.Settings.Default.SettingPanelWidth = this.SettingPanelWidth.Value;
-
             Properties.Settings.Default.StatusVisible = this.StatusVisible;
-
             Properties.Settings.Default.CredentialsProviderKey = this.CredentialsProviderKey;
+ 
+            // model
             Properties.Settings.Default.MovementThreshold = this.MovementThreshold;
-
             Properties.Settings.Default.GPSLogFilePath = this.GPSLogFilePath;
 
             Properties.Settings.Default.Save();
 
+        }
+
+        /// <summary>
+        /// Sets and gets the GPSLogFilePath property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public string GPSLogFilePath
+        {
+            get
+            {
+                return _geoCoordinateManager.GPSLogFilePath;
+            }
+
+            set
+            {
+                if (_geoCoordinateManager.GPSLogFilePath == value)
+                {
+                    return;
+                }
+
+                _geoCoordinateManager.GPSLogFilePath = value;
+                RaisePropertyChanged();
+            }
+        }
+
+        /// <summary>
+        /// GPSログの間隔
+        /// Sets and gets the MovementThreshold property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public double MovementThreshold
+        {
+            get
+            {
+                return _geoCoordinateManager.MovementThreshold;
+            }
+
+            set
+            {
+                if (_geoCoordinateManager.MovementThreshold == value)
+                {
+                    return;
+                }
+
+                _geoCoordinateManager.MovementThreshold = value;
+                RaisePropertyChanged();
+            }
+        }
+
+        public ObservableCollection<Pin> Pins
+        {
+            get
+            {
+                return _geoCoordinateManager.Pins;
+            }
+        }
+
+        public Pin CurrentPin
+        {
+            get
+            {
+                return _geoCoordinateManager.CurrentPin;
+            }
         }
 
         /// <summary>
@@ -187,63 +281,7 @@ namespace BingMaps_GPS_WPF.ViewModel
             }
         }
 
-        /// <summary>
-        /// The <see cref="Pins" /> property's name.
-        /// </summary>
-        public const string PinsPropertyName = "Pins";
-
-        private ObservableCollection<Pin> _pins = new ObservableCollection<Pin>();
-
-        /// <summary>
-        /// Sets and gets the Pins property.
-        /// Changes to that property's value raise the PropertyChanged event. 
-        /// </summary>
-        public ObservableCollection<Pin> Pins
-        {
-            get
-            {
-                return _pins;
-            }
-
-            set
-            {
-                if (_pins == value)
-                {
-                    return;
-                }
-                _pins = value;
-                RaisePropertyChanged(PinsPropertyName);
-            }
-        }
-
-        /// <summary>
-        /// The <see cref="CurrentPin" /> property's name.
-        /// </summary>
-        public const string CurrentPinPropertyName = "CurrentPin";
-
-        private Pin _currentPin = null;
-
-        /// <summary>
-        /// 現在ピン
-        /// </summary>
-        public Pin CurrentPin
-        {
-            get
-            {
-                return _currentPin;
-            }
-
-            set
-            {
-                if (_currentPin == value)
-                {
-                    return;
-                }
-
-                _currentPin = value;
-                RaisePropertyChanged(CurrentPinPropertyName);
-            }
-        }
+        
 
         #region Get Position
 
@@ -261,86 +299,9 @@ namespace BingMaps_GPS_WPF.ViewModel
             }
         }
 
-        /// <summary>
-        /// 現在位置を取得する
-        /// </summary>
         private void GetPosition()
         {
-            System.Device.Location.GeoCoordinateWatcher watcher = new GeoCoordinateWatcher(GeoPositionAccuracy.High);
-
-            watcher.PositionChanged += watcher_PositionChanged;
-            watcher.Start(false);
-        }
-
-        void watcher_PositionChanged(object sender, GeoPositionChangedEventArgs<GeoCoordinate> e)
-        {
-            System.Device.Location.GeoCoordinateWatcher watcher = sender as System.Device.Location.GeoCoordinateWatcher;
-
-            // 一回の取得で解除
-            watcher.PositionChanged -= watcher_PositionChanged;
-
-            GeoPosition<GeoCoordinate> geoPosition = e.Position;
-
-            GeoCoordinate coordinate = geoPosition.Location;
-            
-            if (coordinate.IsUnknown != true)
-            {
-                AddPushpin(geoPosition, true);
-            }
-        }
-
-        private Pin ExistsSamePosition(GeoPosition<GeoCoordinate> geoPosition)
-        {
-            Pin ret = null;
-
-            var location = new Location(geoPosition.Location.Latitude, geoPosition.Location.Longitude, geoPosition.Location.Altitude);
-
-            foreach (var item in _pins)
-            {
-                if (item.Location == location)
-                {
-                    ret = item;
-                    break;
-                }
-            }
-
-            return ret;
-        }
-
-        // 下の方法では初回時は取得できないため、イベントでの取得方法に変更
-        //private void AddPushpin()
-        //{
-        //    System.Device.Location.GeoCoordinateWatcher watcher = new GeoCoordinateWatcher(GeoPositionAccuracy.High);
-
-        //    watcher.TryStart(false, TimeSpan.FromMilliseconds(1000));
-
-        //    GeoCoordinate coordinate = watcher.Position.Location;
-
-        //    if (coordinate.IsUnknown != true)
-        //    {
-        //        AddPushpin(watcher.Position);
-        //    }
-        //}
-
-        private void AddPushpin(GeoPosition<GeoCoordinate> geoPosition, bool removeSamePin)
-        {
-            // 同一ピンの重複削除
-            if (removeSamePin)
-            {
-                Pin samepin = ExistsSamePosition(geoPosition);
-                if (samepin != null)
-                {
-                    _pins.Remove(samepin);
-                }
-            }
-
-            GeoCoordinate coordinate = geoPosition.Location;
-
-            Pin pin = new Pin(geoPosition);
-            _pins.Add(pin);
-
-            this.CurrentPin = pin;
-            this.Location = pin.Location;
+            _geoCoordinateManager.GetPosition();
         }
 
 
@@ -385,7 +346,7 @@ namespace BingMaps_GPS_WPF.ViewModel
                     this.GPSLoggingButtonText = Consts.c_StartLogging;
                 }
 
-                SetLogging(_gpsLogging);
+                _geoCoordinateManager.SetLogging(_gpsLogging);
 
                 RaisePropertyChanged(GPSLoggingPropertyName);
             }
@@ -421,49 +382,7 @@ namespace BingMaps_GPS_WPF.ViewModel
             }
         }
 
-        private System.Device.Location.GeoCoordinateWatcher _watcher = null;
 
-        private bool SetLogging(bool start)
-        {
-            bool ret = false;
-
-            if (start)
-            {
-                // 開始
-
-                _watcher = new GeoCoordinateWatcher(GeoPositionAccuracy.High);
-
-                _watcher.MovementThreshold = this.MovementThreshold;
-                _watcher.PositionChanged += _watcher_PositionChanged;
-                _watcher.Start(false);
-
-                ret = true;
-            }
-            else
-            {
-                // 終了
-                _watcher.PositionChanged -= _watcher_PositionChanged;
-                _watcher.Dispose();
-                _watcher = null;
-            }
-
-            return ret;
-        }
-
-        void _watcher_PositionChanged(object sender, GeoPositionChangedEventArgs<GeoCoordinate> e)
-        {
-            GeoPosition<GeoCoordinate> geoPosition = e.Position;
-
-            GeoCoordinate coordinate = geoPosition.Location;
-
-            if (coordinate.IsUnknown != true)
-            {
-                AddPushpin(geoPosition, false);
-
-                // ログ出力
-                CommonApp.LogGPS(this.GPSLogFilePath, geoPosition);
-            }
-        }
 
         #endregion
 
@@ -487,8 +406,8 @@ namespace BingMaps_GPS_WPF.ViewModel
         private void OpenLogFile()
         {
             // ファイル選択
-            string path = GetOpenFilePath();
-
+            string path = CommonApp.GetOpenLogFilePath();
+            
             if (!File.Exists(path))
                 return;
 
@@ -505,23 +424,7 @@ namespace BingMaps_GPS_WPF.ViewModel
             }
         }
 
-        string GetOpenFilePath()
-        {
-            string path = string.Empty;
 
-            OpenFileDialog dialog = new OpenFileDialog();
-            dialog.Title = "GPSログファイルの選択";
-            dialog.FileName = "";
-            dialog.Filter = "GPSログファイル|*.log";
-            //dialog.DefaultExt = "*.log";
-
-            if (dialog.ShowDialog() == true)
-            {
-                path = dialog.FileName;
-            }
-
-            return path;
-        }
 
         /// <summary>
         /// The <see cref="LogList" /> property's name.
@@ -578,45 +481,8 @@ namespace BingMaps_GPS_WPF.ViewModel
 
                 string line = obj_line as string;
 
-                PointfromString(line);
+                _geoCoordinateManager.PointfromString(line);
             }
-        }
-
-        private void PointfromString(string line)
-        {
-            // ログされた位置の復元テスト
-            string[] parts = line.Split(new string[] { "," }, StringSplitOptions.RemoveEmptyEntries);
-
-            string str_time = parts[0];
-            string str_lat = parts[1];
-            string str_lon = parts[2];
-            string str_alt = parts[3];
-            string str_accuracy = parts[4];
-            string str_altaccuracy = parts[5];
-
-            long long_filetime = 0;
-            double lat = 0;
-            double lon = 0;
-            double alt = 0;
-            double accuracy = 0;
-            double altaccuracy = 0;
-
-            long.TryParse(str_time, out long_filetime);
-            double.TryParse(str_lat, out lat);
-            double.TryParse(str_lon, out lon);
-            double.TryParse(str_alt, out alt);
-            double.TryParse(str_accuracy, out accuracy);
-            double.TryParse(str_altaccuracy, out altaccuracy);
-
-            DateTimeOffset time = DateTimeOffset.FromFileTime(long_filetime);
-
-            var location = new Location(lat, lon, alt);
-
-            GeoCoordinate geoCoordinate = new GeoCoordinate(lat, lon, alt);
-            GeoPosition<GeoCoordinate> geoPosition = new GeoPosition<GeoCoordinate>(time, geoCoordinate);
-
-            AddPushpin(geoPosition, true);
-
         }
 
         #endregion
@@ -734,8 +600,7 @@ namespace BingMaps_GPS_WPF.ViewModel
 
         private void ClearPin()
         {
-            _pins.Clear();
-            this.CurrentPin = null;
+            _geoCoordinateManager.ClearPin();
         }
 
         #endregion
@@ -954,35 +819,6 @@ namespace BingMaps_GPS_WPF.ViewModel
             }
         }
 
-        /// <summary>
-        /// The <see cref="GPSLogFilePath" /> property's name.
-        /// </summary>
-        public const string GPSLogFilePathPropertyName = "GPSLogFilePath";
-
-        private string _gpsLogFilePath = string.Empty;
-
-        /// <summary>
-        /// Sets and gets the GPSLogFilePath property.
-        /// Changes to that property's value raise the PropertyChanged event. 
-        /// </summary>
-        public string GPSLogFilePath
-        {
-            get
-            {
-                return _gpsLogFilePath;
-            }
-
-            set
-            {
-                if (_gpsLogFilePath == value)
-                {
-                    return;
-                }
-
-                _gpsLogFilePath = value;
-                RaisePropertyChanged(GPSLogFilePathPropertyName);
-            }
-        }
 
         private ICommand _command_SetLogFilePath = null;
 
@@ -1000,7 +836,7 @@ namespace BingMaps_GPS_WPF.ViewModel
 
         void SetLogFilePath()
         {
-            string path = GetLogFilePath();
+            string path = CommonApp.GetSaveLogFilePath();
 
             if (Path.IsPathRooted(path))
             {
@@ -1008,110 +844,10 @@ namespace BingMaps_GPS_WPF.ViewModel
             }
         }
 
-        private string GetLogFilePath()
-        {
-            string path = string.Empty;
 
-            var dialog = new SaveFileDialog();
-            dialog.Title = "GPSログファイルの保存先";
-            dialog.Filter = "GPSログファイル|*.log";
-            
-            if (dialog.ShowDialog() == true)
-            {
-                path = dialog.FileName;
-            }
-
-            return path;
-        }
 
 
         #endregion
-
-
-        #region MovementThreshold
-
-        /// <summary>
-        /// The <see cref="MovementThresholdTemp" /> property's name.
-        /// </summary>
-        public const string MovementThresholdTempPropertyName = "MovementThresholdTemp";
-
-        private object _movementThresholdTemp = 50;
-
-        /// <summary>
-        /// GPSログを出力する間隔（距離）
-        /// 入力検証用
-        /// Sets and gets the MovementThresholdTemp property.
-        /// Changes to that property's value raise the PropertyChanged event. 
-        /// </summary>
-        [Required(ErrorMessage = "10-1000の数字を入力してください。")]
-        [Range(10, 1000,
-                ErrorMessage = "{1}-{2}の数字を入力してください。")]
-        public object MovementThresholdTemp
-        {
-            get
-            {
-                return _movementThresholdTemp;
-            }
-
-            set
-            {
-                if (_movementThresholdTemp == value)
-                {
-                    return;
-                }
-
-                _movementThresholdTemp = value;
-                RaisePropertyChanged(MovementThresholdTempPropertyName);
-
-                ValidateProperty(value, MovementThresholdTempPropertyName);
-
-
-                var error = _errors.ContainsKey(MovementThresholdTempPropertyName);
-                if (!error)
-                {
-                    double d = this.MovementThreshold;
-                    if (double.TryParse(_movementThresholdTemp.ToString(), out d))
-                    {
-                        this.MovementThreshold = d;
-                    }
-                }
-            }
-        }
-
-        /// <summary>
-        /// The <see cref="MovementThreshold" /> property's name.
-        /// </summary>
-        public const string MovementThresholdPropertyName = "MovementThreshold";
-
-        private double _movementThreshold = 50;
-
-        /// <summary>
-        /// GPSログを出力する間隔（距離）
-        /// Sets and gets the MovementThreshold property.
-        /// Changes to that property's value raise the PropertyChanged event. 
-        /// </summary>
-        public double MovementThreshold
-        {
-            get
-            {
-                return _movementThreshold;
-            }
-
-            set
-            {
-                if (_movementThreshold == value)
-                {
-                    return;
-                }
-
-                _movementThreshold = value;
-                RaisePropertyChanged(MovementThresholdPropertyName);
-            }
-        }
-
-
-        #endregion
-
 
         #region GridSplitter
 
@@ -1156,82 +892,7 @@ namespace BingMaps_GPS_WPF.ViewModel
         #endregion
 
 
-        #region ValidateProperty
 
-        protected void ValidateProperty(object value, [CallerMemberName]string propertyName = null)
-        {
-            var context = new ValidationContext(this) { MemberName = propertyName };
-            var validationErrors = new List<System.ComponentModel.DataAnnotations.ValidationResult>();
-            if (!Validator.TryValidateProperty(value, context, validationErrors))
-            {
-                var errors = validationErrors.Select(error => error.ErrorMessage);
-                SetErrors(propertyName, errors);
-            }
-            else
-            {
-                ClearErrors(propertyName);
-            }
-        }
-
-        readonly Dictionary<string, List<string>> _errors = new Dictionary<string, List<string>>();
-
-        protected void SetErrors(string propertyName, IEnumerable<string> errors)
-        {
-            var existserror = _errors.ContainsKey(propertyName);
-            var existsnewerror = errors != null && errors.Count() > 0;
-
-            if (!existserror && !existsnewerror)
-                return;
-
-            if (existsnewerror)
-            {
-                _errors[propertyName] = new List<string>(errors);
-            }
-            else
-            {
-                _errors.Remove(propertyName);
-            }
-        }
-
-        protected void ClearErrors(string propertyName)
-        {
-            if (_errors.ContainsKey(propertyName))
-            {
-                _errors.Remove(propertyName);
-                OnErrorsChanged(propertyName);
-            }
-        }
-
-        private void OnErrorsChanged(string propertyName)
-        {
-            var h = this.ErrorsChanged;
-            if (h != null)
-            {
-                h(this, new DataErrorsChangedEventArgs(propertyName));
-            }
-        }
-
-        #endregion
-
-        #region INotifyDataErrorInfo
-
-        public event EventHandler<DataErrorsChangedEventArgs> ErrorsChanged;
-
-        public System.Collections.IEnumerable GetErrors(string propertyName)
-        {
-            if (string.IsNullOrEmpty(propertyName) ||
-                !_errors.ContainsKey(propertyName))
-                return null;
-
-            return _errors[propertyName];
-        }
-
-        public bool HasErrors
-        {
-            get { return _errors.Count > 0; }
-        }
-
-        #endregion
 
     }
 }

@@ -1,13 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
 using System.IO;
 using Microsoft.Maps.MapControl.WPF;
-//using Bing.Maps;
 using System.Device.Location;
+using Microsoft.Win32;
 
 namespace BingMaps_GPS_WPF
 {
@@ -38,5 +33,78 @@ namespace BingMaps_GPS_WPF
             File.AppendAllText(path, s + Environment.NewLine);
         
         }
+
+        public static GeoPosition<GeoCoordinate> GetGeoPositionfromString(string line)
+        {
+            GeoPosition<GeoCoordinate> geoPosition = null;
+
+            // ログされた位置の復元テスト
+            string[] parts = line.Split(new string[] { "," }, StringSplitOptions.RemoveEmptyEntries);
+
+            string str_time = parts[0];
+            string str_lat = parts[1];
+            string str_lon = parts[2];
+            string str_alt = parts[3];
+            string str_accuracy = parts[4];
+            string str_altaccuracy = parts[5];
+
+            long filetime = 0;
+            double lat = 0;
+            double lon = 0;
+            double alt = 0;
+            double accuracy = 0;
+            double altaccuracy = 0;
+
+            long.TryParse(str_time, out filetime);
+            double.TryParse(str_lat, out lat);
+            double.TryParse(str_lon, out lon);
+            double.TryParse(str_alt, out alt);
+            double.TryParse(str_accuracy, out accuracy);
+            double.TryParse(str_altaccuracy, out altaccuracy);
+
+            DateTimeOffset time = DateTimeOffset.FromFileTime(filetime);
+
+            var location = new Location(lat, lon, alt);
+
+            GeoCoordinate geoCoordinate = new GeoCoordinate(lat, lon, alt);
+
+            geoPosition = new GeoPosition<GeoCoordinate>(time, geoCoordinate);
+
+            return geoPosition;
+
+        }
+
+        public static string GetOpenLogFilePath()
+        {
+            string path = string.Empty;
+
+            OpenFileDialog dialog = new OpenFileDialog();
+            dialog.Title = "GPSログファイルの選択";
+            dialog.Filter = "GPSログファイル|*.log";
+
+            if (dialog.ShowDialog() == true)
+            {
+                path = dialog.FileName;
+            }
+
+            return path;
+        }
+
+        public static string GetSaveLogFilePath()
+        {
+            string path = string.Empty;
+
+            var dialog = new SaveFileDialog();
+            dialog.Title = "GPSログファイルの保存先";
+            dialog.Filter = "GPSログファイル|*.log";
+
+            if (dialog.ShowDialog() == true)
+            {
+                path = dialog.FileName;
+            }
+
+            return path;
+        }
+
     }
 }

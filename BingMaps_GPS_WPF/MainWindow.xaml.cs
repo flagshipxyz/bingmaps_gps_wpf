@@ -14,12 +14,8 @@ namespace BingMaps_GPS_WPF
         public MainWindow()
         {
             InitializeComponent();
-            Closing += (s, e) => ViewModelLocator.Cleanup();
-        }
-
-        private void Button_Click(object sender, RoutedEventArgs e)
-        {
-
+            Closed += (s, e) => ViewModelLocator.Cleanup();
+            //Closing += (s, e) => ViewModelLocator.Cleanup();
         }
     }
 }

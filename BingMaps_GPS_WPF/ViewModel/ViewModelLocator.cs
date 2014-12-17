@@ -29,15 +29,6 @@ namespace BingMaps_GPS_WPF.ViewModel
         {
             ServiceLocator.SetLocatorProvider(() => SimpleIoc.Default);
 
-            if (ViewModelBase.IsInDesignModeStatic)
-            {
-                SimpleIoc.Default.Register<IDataService, Design.DesignDataService>();
-            }
-            else
-            {
-                SimpleIoc.Default.Register<IDataService, DataService>();
-            }
-
             SimpleIoc.Default.Register<MainViewModel>();
         }
 
@@ -59,7 +50,10 @@ namespace BingMaps_GPS_WPF.ViewModel
         /// Cleans up all the resources.
         /// </summary>
         public static void Cleanup()
-        {            
+        {
+            SimpleIoc.Default.GetInstance<MainViewModel>().Cleanup();
+
+            SimpleIoc.Default.Unregister<MainViewModel>();
         }
     }
 }
