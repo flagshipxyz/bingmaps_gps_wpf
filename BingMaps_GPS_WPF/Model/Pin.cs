@@ -12,9 +12,9 @@ namespace BingMaps_GPS_WPF.Model
             this.Location = new Location(geoPosition.Location.Latitude, geoPosition.Location.Longitude, geoPosition.Location.Altitude);
         }
 
-        public GeoPosition<GeoCoordinate> GeoPosition { get; set; }
+        public GeoPosition<GeoCoordinate> GeoPosition { get; private set; }
 
-        public Location Location { get; set; }
+        public Location Location { get; private set; }
 
     }
 }

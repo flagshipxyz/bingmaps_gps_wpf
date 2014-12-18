@@ -41,12 +41,13 @@ namespace BingMaps_GPS_WPF
             // ログされた位置の復元テスト
             string[] parts = line.Split(new string[] { "," }, StringSplitOptions.RemoveEmptyEntries);
 
-            string str_time = parts[0];
-            string str_lat = parts[1];
-            string str_lon = parts[2];
-            string str_alt = parts[3];
-            string str_accuracy = parts[4];
-            string str_altaccuracy = parts[5];
+            int i = 0;
+            string str_time = parts[i]; i++;
+            string str_lat = parts[i]; i++;
+            string str_lon = parts[i]; i++;
+            string str_alt = parts[i]; i++;
+            string str_accuracy = parts[i]; i++;
+            string str_altaccuracy = parts[i];
 
             long filetime = 0;
             double lat = 0;
@@ -94,7 +95,7 @@ namespace BingMaps_GPS_WPF
         {
             string path = string.Empty;
 
-            var dialog = new SaveFileDialog();
+            SaveFileDialog dialog = new SaveFileDialog();
             dialog.Title = "GPSログファイルの保存先";
             dialog.Filter = "GPSログファイル|*.log";
 
