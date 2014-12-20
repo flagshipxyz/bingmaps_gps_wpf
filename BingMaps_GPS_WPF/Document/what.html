@@ -1,0 +1,251 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BingMaps+GPS for WPF- flagship</title>
+
+
+
+    <link href="Content/bootstrap.css" rel="stylesheet" />
+    <!--<link href="/Content/site.css" rel="stylesheet" />-->
+    <!--<link href="/Content/bootstrap-lightbox/bootstrap-lightbox.min.css" rel="stylesheet">-->
+
+</head>
+<body>
+
+    <div class="container body-content">
+
+
+        <h2>BingMaps+GPS for WPF</h2>
+
+        <style>
+            td {
+                vertical-align: top;
+            }
+        </style>
+
+
+        <a href="Images/prototype/bingmaps_gps_how.png" target="_blank">
+            <img src="Images/prototype/bingmaps_gps_how.png" style="width:600px">
+        </a>
+
+        <br />
+        BingMapsとGPSを利用したGPSロガーアプリケーション
+        <br />
+        <br />
+
+        <table class="table-responsive">
+            <tr>
+                <th width="30"></th>
+                <th width="150"></th>
+                <th width="300"></th>
+            </tr>
+            <tr>
+                <td>OS</td>
+                <td>Windows 7/8.1</td>
+                <td>
+                    GPS情報の取得は、7以降に搭載されたセンサーAPIを利用しています。
+                    <br />
+                    そのため、VistaについてはGPS機能が動作しません。
+                    <br />
+                    <br />
+                    楽しいWindows 7アプリ作成入門（2）：Windows 7でセンサや位置情報を使うアプリを作ろう - ＠IT
+                    <br />
+                    <a href="http://www.atmarkit.co.jp/ait/articles/1004/14/news101.html" target="_blank">http://www.atmarkit.co.jp/ait/articles/1004/14/news101.html</a>
+                    <br />
+                    GeoCoordinateWatcher クラス (System.Device.Location)
+                    <br />
+                    <a href="http://msdn.microsoft.com/ja-jp/library/system.device.location.geocoordinatewatcher(v=vs.110).aspx" target="_blank">http://msdn.microsoft.com/ja-jp/library/system.device.location.geocoordinatewatcher(v=vs.110).aspx</a>
+                    <br />
+                    <br />
+                    8については、おそらく動作すると思いますが、実機テストを行っていません。
+                </td>
+            </tr>
+            <tr>
+                <td></td>
+                <td>.NET Framework 4.5.1</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>GPS</td>
+                <td>内蔵型以外にも外部接続型でも可。</td>
+                <td>
+                    外部接続のドライバがセンサーAPI対応のものでない場合（おそらくほとんど）については、COMポート出力をセンサーAPIにバイパスする下のようなドライバが必要です。
+                    <br />
+                    <br />
+                    Welcome to GPSDirect and GPSReverse GPS NMEA Windows 7 Windows 8 Windows 10 Sensor Driver iOS Android TCP
+                    <br />
+                    <a href="http://www.turboirc.com/gps7/" target="_blank">http://www.turboirc.com/gps7/</a>
+
+                </td>
+            </tr>
+        </table>
+
+        <br />
+        <br />
+
+
+        
+        <a href="Images/prototype/bingmaps_gps_how_7.png" target="_blank">
+        <img src="Images/prototype/bingmaps_gps_how_7.png" style="width:600px"></a>
+
+
+        <br />
+        <table class="table-responsive">
+            <tr>
+                <th width="30"></th>
+                <th width="150"></th>
+                <th width="300"></th>
+            </tr>
+            <tr>
+                <td>①</td>
+                <td>ボタンパネル</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td></td>
+                <td>GetPosition</td>
+                <td>現在地の表示を行います。</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td>StartLogging</td>
+                <td>移動記録の開始と終了を実行します。</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td>Log</td>
+                <td>StartLoggingで記録されたファイルを読み込み、その記録を②のログパネルに表示します。</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td>Setting</td>
+                <td>③設定パネルを表示します。</td>
+            </tr>
+            <tr>
+                <td>　</td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>②</td>
+                <td>ログパネル</td>
+                <td>移動記録をリスト表示します。</td>
+            </tr>
+            <tr>
+                <td>　</td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>③</td>
+                <td>設定パネル</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>　</td>
+                <td>CredentialsProviderKey</td>
+                <td>
+                    BingMapsのライセンスキーを設定します。
+                    <br />
+                    キーを設定することで地図上に表示されている「Invalid Credentials. Sign up for a developer account at...」の表示を非表示にすることができます。
+                    <br />
+                    <br />
+                    Home - Bing Maps Account Center
+                    <br />
+                    <a href="https://www.bingmapsportal.com/" target="_blank">https://www.bingmapsportal.com/</a>
+                </td>
+            </tr>
+            <tr>
+                <td>　</td>
+                <td>GPSLogFilePath</td>
+                <td>
+                    移動記録するファイルパスを設定します。
+                    <br />
+                    （設定しないときはアプリケーションの実行ディレクトリ内にgps.logという名前で保存されます。）
+                </td>
+            </tr>
+            <tr>
+                <td>　</td>
+                <td>MovementThreshold</td>
+                <td>
+                    移動記録するときの間隔を設定します。
+                    <br />
+                    （10～1000メートル）
+                </td>
+            </tr>
+            <tr>
+                <td>　</td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>④</td>
+                <td>ステータスパネル</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>　</td>
+                <td>Time</td>
+                <td>現在地を取得した時刻を表します。</td>
+            </tr>
+            <tr>
+                <td>　</td>
+                <td>Latitude</td>
+                <td>緯度を表します。</td>
+            </tr>
+            <tr>
+                <td>　</td>
+                <td>Longitude</td>
+                <td>経度を表します。</td>
+            </tr>
+            <tr>
+                <td>　</td>
+                <td>Altitude</td>
+                <td>高度を表します。</td>
+            </tr>
+            <tr>
+                <td>　</td>
+                <td>PinCount</td>
+                <td>地図に表示しているピンの総数を表します。</td>
+            </tr>
+            <tr>
+                <td>　</td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>⑤</td>
+                <td>コンテキストメニュー</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>　</td>
+                <td>Clear AllPin</td>
+                <td>地図に表示している全てのピンをクリアします。</td>
+            </tr>
+            <tr>
+                <td>　</td>
+                <td>Show Status</td>
+                <td>④ステータスパネルの表示・非表示を切り替えます。</td>
+            </tr>
+            <tr>
+                <td>　</td>
+                <td>Show LogPanel</td>
+                <td>②ログパネルの表示・非表示を切り替えます。</td>
+            </tr>
+        </table>
+
+        <br />
+
+        <hr />
+        <footer>
+            <p>&copy; 2014 - flagship</p>
+        </footer>
+    </div>
+
+
+</body>
+</html>
