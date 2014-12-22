@@ -39,10 +39,10 @@
                         </i:EventTrigger>
                     </i:Interaction.Triggers>
                 </MenuItem>
-                <MenuItem Header="Show Status" IsChecked="{Binding StatusVisible}">
+                <MenuItem Header="Set InitialLocation" >
                     <i:Interaction.Triggers>
                         <i:EventTrigger EventName="Click">
-                            <i:InvokeCommandAction Command="{Binding Command_ChangeStatusVisible}" >
+                            <i:InvokeCommandAction Command="{Binding Command_SetInitialLocation}" >
                             </i:InvokeCommandAction>
                         </i:EventTrigger>
                     </i:Interaction.Triggers>
@@ -51,6 +51,22 @@
                     <i:Interaction.Triggers>
                         <i:EventTrigger EventName="Click">
                             <i:InvokeCommandAction Command="{Binding Command_ChangeLogPanelVisible}" >
+                            </i:InvokeCommandAction>
+                        </i:EventTrigger>
+                    </i:Interaction.Triggers>
+                </MenuItem>
+                <MenuItem Header="Show SettingPanel" IsChecked="{Binding SettingPanelVisible}">
+                    <i:Interaction.Triggers>
+                        <i:EventTrigger EventName="Click">
+                            <i:InvokeCommandAction Command="{Binding Command_ChangeSettingPanelVisible}" >
+                            </i:InvokeCommandAction>
+                        </i:EventTrigger>
+                    </i:Interaction.Triggers>
+                </MenuItem>
+                <MenuItem Header="Show Status" IsChecked="{Binding StatusVisible}">
+                    <i:Interaction.Triggers>
+                        <i:EventTrigger EventName="Click">
+                            <i:InvokeCommandAction Command="{Binding Command_ChangeStatusVisible}" >
                             </i:InvokeCommandAction>
                         </i:EventTrigger>
                     </i:Interaction.Triggers>
@@ -97,11 +113,11 @@
     <DockPanel LastChildFill="True" >
         <Grid DockPanel.Dock="Top" Height="30" >
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="110" />
-                <ColumnDefinition Width="110" />
+                <ColumnDefinition Width="115" />
+                <ColumnDefinition Width="115" />
                 <ColumnDefinition />
-                <ColumnDefinition Width="110" />
-                <ColumnDefinition Width="110" />
+                <ColumnDefinition Width="115" />
+                <ColumnDefinition Width="115" />
             </Grid.ColumnDefinitions>
 
             <Grid.RowDefinitions>
@@ -118,8 +134,16 @@
                 </i:Interaction.Triggers>
             </Button>
 
-            <ToggleButton Grid.Column="1" Content="{Binding GPSLoggingButtonText}" IsChecked="{Binding GPSLogging}">
+            <ToggleButton Grid.Column="1" Content="{Binding GPSLoggingButtonText}" IsChecked="{Binding GPSLogging,Mode=OneWay}">
+                <i:Interaction.Triggers>
+                    <i:EventTrigger EventName="Click">
+                        <i:InvokeCommandAction Command="{Binding Command_SetGPSLogging}">
+                        </i:InvokeCommandAction>
+                    </i:EventTrigger>
+                </i:Interaction.Triggers>
             </ToggleButton>
+            <!--<ToggleButton Grid.Column="1" Content="{Binding GPSLoggingButtonText}" IsChecked="{Binding GPSLogging}">
+            </ToggleButton>-->
 
             <Button Grid.Column="3" Content="Log" >
                 <i:Interaction.Triggers>
@@ -163,6 +187,13 @@
                 <Border BorderThickness="2"></Border>
                 <Label VerticalAlignment="Center" 
                        Content="{Binding Pins.Count}" />
+
+                <Border BorderThickness="4"></Border>
+                <Label VerticalAlignment="Center" >ZoomLevel:</Label>
+                <Border BorderThickness="2"></Border>
+                <Label VerticalAlignment="Center" 
+                       Content="{Binding ZoomLevel}" />
+
             </StackPanel>
         </Grid>
 
@@ -197,9 +228,17 @@
                 </i:Interaction.Triggers>
             </GridSplitter>
 
-            <m:Map Grid.Column="2" x:Name="map" ZoomLevel="{Binding ZoomLevel}" Center="{Binding Location ,Mode=TwoWay}"
+            <m:Map Grid.Column="2" x:Name="map" ZoomLevel="{Binding ZoomLevel,Mode=TwoWay}" Center="{Binding Location ,Mode=TwoWay}"
                ContextMenu="{StaticResource commonContextMenu}" CredentialsProvider="{Binding CredentialsProvider}">
                 <m:MapItemsControl ItemsSource="{Binding Pins}" ItemTemplate="{StaticResource PinTemplate}"/>
+                
+                <i:Interaction.Triggers>
+                    <i:EventTrigger EventName="MouseRightButtonDown">
+                        <cmd:EventToCommand Command="{Binding Command_SetTempInitialLocation}"
+                                    PassEventArgsToCommand="True" />
+                    </i:EventTrigger>
+                </i:Interaction.Triggers>
+
             </m:Map>
 
             <GridSplitter Grid.Column="3" Width="10" BorderThickness="1"

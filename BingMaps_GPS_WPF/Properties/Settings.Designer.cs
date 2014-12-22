@@ -94,5 +94,28 @@ namespace BingMaps_GPS_WPF.Properties {
                 this["GPSLogFilePath"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        public global::Microsoft.Maps.MapControl.WPF.Location IniLocation {
+            get {
+                return ((global::Microsoft.Maps.MapControl.WPF.Location)(this["IniLocation"]));
+            }
+            set {
+                this["IniLocation"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("15")]
+        public double ZoomLevel {
+            get {
+                return ((double)(this["ZoomLevel"]));
+            }
+            set {
+                this["ZoomLevel"] = value;
+            }
+        }
     }
 }

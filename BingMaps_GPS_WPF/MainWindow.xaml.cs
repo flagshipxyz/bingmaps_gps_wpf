@@ -1,5 +1,4 @@
-﻿using System.Windows;
-using BingMaps_GPS_WPF.ViewModel;
+﻿using BingMaps_GPS_WPF.ViewModel;
 using FirstFloor.ModernUI.Windows.Controls;
 
 namespace BingMaps_GPS_WPF
@@ -18,5 +17,6 @@ namespace BingMaps_GPS_WPF
             Closed += (s, e) => ViewModelLocator.Cleanup();
             //Closing += (s, e) => ViewModelLocator.Cleanup();
         }
+
     }
 }

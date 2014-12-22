@@ -109,6 +109,20 @@ namespace BingMaps_GPS_WPF.Model
         }
 
         /// <summary>
+        /// GPSログの間隔（メートル）
+        /// 検証に成功した値（GPSログ時に適用される値）
+        /// </summary>
+        private double _valid_MovementThreshold = 50;
+
+        public double Valid_MovementThreshold
+        {
+            get
+            {
+                return _valid_MovementThreshold;
+            }
+        }
+
+        /// <summary>
         /// The <see cref="MovementThreshold" /> property's name.
         /// </summary>
         public const string MovementThresholdPropertyName = "MovementThreshold";
@@ -137,6 +151,11 @@ namespace BingMaps_GPS_WPF.Model
                 }
 
                 ValidateProperty(value, MovementThresholdPropertyName);
+
+                if (!this.Errors.ContainsKey(MovementThresholdPropertyName))
+                {
+                    _valid_MovementThreshold = value;
+                }
 
                 _movementThreshold = value;
                 RaisePropertyChanged(MovementThresholdPropertyName);
@@ -226,34 +245,93 @@ namespace BingMaps_GPS_WPF.Model
 
         }
 
-        // TODO 外部から重複して開始される危険がある
-        // TODO MovementThresholdの値が検証失敗した値でも実行されてしまう
-        public bool SetLogging(bool start)
+        //// 外部から重複して開始される危険がある
+        //public bool SetLogging(bool start)
+        //{
+        //    bool ret = false;
+
+        //    if (start)
+        //    {
+        //        // 開始
+        //        _watcher = new GeoCoordinateWatcher(GeoPositionAccuracy.High);
+
+        //        _watcher.MovementThreshold = this.MovementThreshold;
+        //        _watcher.PositionChanged += _watcher_PositionChanged;
+
+        //        _watcher.Start(false);
+
+        //        ret = true;
+        //    }
+        //    else
+        //    {
+        //        // 終了
+        //        _watcher.Stop();
+
+        //        _watcher.Dispose();
+        //        _watcher = null;
+        //    }
+
+        //    return ret;
+        //}
+
+
+        /// <summary>
+        /// The <see cref="GPSLogging" /> property's name.
+        /// </summary>
+        public const string GPSLoggingPropertyName = "GPSLogging";
+
+        private bool _gpsLogging = false;
+
+        /// <summary>
+        /// Sets and gets the GPSLogging property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public bool GPSLogging
         {
-            bool ret = false;
-
-            if (start)
+            get
             {
-                // 開始
-                _watcher = new GeoCoordinateWatcher(GeoPositionAccuracy.High);
-
-                _watcher.MovementThreshold = this.MovementThreshold;
-                _watcher.PositionChanged += _watcher_PositionChanged;
-
-                _watcher.Start(false);
-
-                ret = true;
-            }
-            else
-            {
-                // 終了
-                _watcher.Stop();
-
-                _watcher.Dispose();
-                _watcher = null;
+                return _gpsLogging;
             }
 
-            return ret;
+            set
+            {
+                if (_gpsLogging == value)
+                {
+                    return;
+                }
+
+                _gpsLogging = value;
+                RaisePropertyChanged(GPSLoggingPropertyName);
+            }
+        }
+
+        public void StartLogging()
+        {
+            if (_watcher != null)
+            {
+                throw new Exception("すでに位置情報の記録は開始されています。");
+            }
+
+            // 開始
+            _watcher = new GeoCoordinateWatcher(GeoPositionAccuracy.High);
+
+            _watcher.MovementThreshold = this.Valid_MovementThreshold;
+            _watcher.PositionChanged += _watcher_PositionChanged;
+
+            _watcher.Start(false);
+
+            this.GPSLogging = true;
+        }
+
+        public void StopLogging()
+        {
+            // 終了
+            _watcher.Stop();
+
+            _watcher.Dispose();
+            _watcher = null;
+
+            this.GPSLogging = false;
         }
 
         void _watcher_PositionChanged(object sender, GeoPositionChangedEventArgs<GeoCoordinate> e)

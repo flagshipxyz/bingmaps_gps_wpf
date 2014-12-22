@@ -20,5 +20,11 @@
     <Setting Name="GPSLogFilePath" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
+    <Setting Name="IniLocation" Type="Microsoft.Maps.MapControl.WPF.Location" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="ZoomLevel" Type="System.Double" Scope="User">
+      <Value Profile="(Default)">15</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

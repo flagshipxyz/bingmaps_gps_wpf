@@ -56,6 +56,10 @@ namespace BingMaps_GPS_WPF.ViewModel
                     this.Location = _geoCoordinateManager.CurrentPin.Location;
                 }
             }
+            else if (name == GeoCoordinateManager.GPSLoggingPropertyName)
+            {
+                RaisePropertyChanged(GPSLoggingButtonTextPropertyName);            
+            }
         }
 
         /// <summary>
@@ -67,16 +71,27 @@ namespace BingMaps_GPS_WPF.ViewModel
         {
             string name = e.PropertyName;
 
-            System.Collections.Generic.IEnumerable<string> errors = _geoCoordinateManager.GetErrors(name) as System.Collections.Generic.IEnumerable<string>;
-
-            if (errors != null && errors.Count() > 0)
+            if (_geoCoordinateManager.Errors.ContainsKey(name))
             {
+                List<string> errors = _geoCoordinateManager.Errors[name];
+
                 SetErrors(name, errors);
             }
             else
             {
                 ClearErrors(name);
             }
+
+            //System.Collections.Generic.IEnumerable<string> errors = _geoCoordinateManager.GetErrors(name) as System.Collections.Generic.IEnumerable<string>;
+
+            //if (errors != null && errors.Count() > 0)
+            //{
+            //    SetErrors(name, errors);
+            //}
+            //else
+            //{
+            //    ClearErrors(name);
+            //}
         }
 
         public override void Cleanup()
@@ -133,6 +148,8 @@ namespace BingMaps_GPS_WPF.ViewModel
             this.SettingPanelWidth = new GridLength(Properties.Settings.Default.SettingPanelWidth);
             this.StatusVisible = Properties.Settings.Default.StatusVisible;
             this.CredentialsProviderKey = Properties.Settings.Default.CredentialsProviderKey;
+            this.Location = _iniLocation = Properties.Settings.Default.IniLocation;
+            this.ZoomLevel = Properties.Settings.Default.ZoomLevel;
 
             // model            
             this.MovementThreshold = Properties.Settings.Default.MovementThreshold;
@@ -146,9 +163,12 @@ namespace BingMaps_GPS_WPF.ViewModel
             Properties.Settings.Default.SettingPanelWidth = this.SettingPanelWidth.Value;
             Properties.Settings.Default.StatusVisible = this.StatusVisible;
             Properties.Settings.Default.CredentialsProviderKey = this.CredentialsProviderKey;
- 
+            Properties.Settings.Default.IniLocation = _iniLocation;
+            Properties.Settings.Default.ZoomLevel = this.ZoomLevel;
+
             // model
-            Properties.Settings.Default.MovementThreshold = this.MovementThreshold;
+            Properties.Settings.Default.MovementThreshold = this.Valid_MovementThreshold;
+            //Properties.Settings.Default.MovementThreshold = this.MovementThreshold;
             Properties.Settings.Default.GPSLogFilePath = this.GPSLogFilePath;
 
             Properties.Settings.Default.Save();
@@ -175,6 +195,18 @@ namespace BingMaps_GPS_WPF.ViewModel
 
                 _geoCoordinateManager.GPSLogFilePath = value;
                 RaisePropertyChanged();
+            }
+        }
+
+        /// <summary>
+        /// GPSログの間隔
+        /// 検証に成功した値（GPSログ時に適用される値）
+        /// </summary>
+        public double Valid_MovementThreshold
+        {
+            get
+            {
+                return _geoCoordinateManager.Valid_MovementThreshold;
             }
         }
 
@@ -241,6 +273,11 @@ namespace BingMaps_GPS_WPF.ViewModel
 
             set
             {
+                if (value == null)
+                {
+                    return;
+                }
+
                 if (_location == value)
                 {
                     return;
@@ -308,47 +345,39 @@ namespace BingMaps_GPS_WPF.ViewModel
         #endregion
 
 
-        #region Logging
+        #region GPSLogging
 
-        /// <summary>
-        /// The <see cref="GPSLogging" /> property's name.
-        /// </summary>
-        public const string GPSLoggingPropertyName = "GPSLogging";
+        private ICommand _command_SetGPSLogging = null;
 
-        private bool _gpsLogging = false;
+        public ICommand Command_SetGPSLogging
+        {
+            get
+            {
+                if (_command_SetGPSLogging == null)
+                {
+                    _command_SetGPSLogging = new RelayCommand(new Action(SetGPSLogging));
+                }
+                return _command_SetGPSLogging;
+            }
+        }
 
-        /// <summary>
-        /// Sets and gets the GPSLogging property.
-        /// Changes to that property's value raise the PropertyChanged event. 
-        /// </summary>
+        private void SetGPSLogging()
+        {
+            if (!_geoCoordinateManager.GPSLogging)
+            {
+                _geoCoordinateManager.StartLogging();
+            }
+            else
+            {
+                _geoCoordinateManager.StopLogging();            
+            }
+        }
+
         public bool GPSLogging
         {
             get
             {
-                return _gpsLogging;
-            }
-
-            set
-            {
-                if (_gpsLogging == value)
-                {
-                    return;
-                }
-
-                _gpsLogging = value;
-
-                if (_gpsLogging)
-                {
-                    this.GPSLoggingButtonText = Consts.c_StopLogging;
-                }
-                else
-                {
-                    this.GPSLoggingButtonText = Consts.c_StartLogging;
-                }
-
-                _geoCoordinateManager.SetLogging(_gpsLogging);
-
-                RaisePropertyChanged(GPSLoggingPropertyName);
+                return _geoCoordinateManager.GPSLogging;
             }
         }
 
@@ -367,21 +396,18 @@ namespace BingMaps_GPS_WPF.ViewModel
         {
             get
             {
-                return _gpsLoggingButtonText;
-            }
-
-            set
-            {
-                if (_gpsLoggingButtonText == value)
+                if (this.GPSLogging)
                 {
-                    return;
+                    _gpsLoggingButtonText = Consts.c_StopLogging;
+                }
+                else
+                {
+                    _gpsLoggingButtonText = Consts.c_StartLogging;
                 }
 
-                _gpsLoggingButtonText = value;
-                RaisePropertyChanged(GPSLoggingButtonTextPropertyName);
+                return _gpsLoggingButtonText;
             }
         }
-
 
 
         #endregion
@@ -752,6 +778,25 @@ namespace BingMaps_GPS_WPF.ViewModel
             }
         }
 
+        private ICommand _command_ChangeSettingPanelVisible = null;
+
+        public ICommand Command_ChangeSettingPanelVisible
+        {
+            get
+            {
+                if (_command_ChangeSettingPanelVisible == null)
+                {
+                    _command_ChangeSettingPanelVisible = new RelayCommand(new Action(ChangeSettingPanelVisible));
+                }
+                return _command_ChangeSettingPanelVisible;
+            }
+        }
+
+        private void ChangeSettingPanelVisible()
+        {
+            this.SettingPanelVisible = !this.SettingPanelVisible;
+        }
+
         #endregion
 
         #region CredentialsProvider
@@ -844,9 +889,6 @@ namespace BingMaps_GPS_WPF.ViewModel
             }
         }
 
-
-
-
         #endregion
 
         #region GridSplitter
@@ -888,6 +930,72 @@ namespace BingMaps_GPS_WPF.ViewModel
         {
             this.SettingPanelVisible = false;
         }
+
+        #endregion
+
+
+        #region InitialLocation
+
+        private Location _iniLocation = null;
+        private Location _temp_IniLocation = null;
+
+        private ICommand _command_SetInitialLocation = null;
+
+        public ICommand Command_SetInitialLocation
+        {
+            get
+            {
+                if (_command_SetInitialLocation == null)
+                {
+                    _command_SetInitialLocation = new RelayCommand(new Action(SetInitialLocation));
+                }
+                return _command_SetInitialLocation;
+            }
+        }
+
+        /// <summary>
+        /// 初期開始位置の取得
+        /// </summary>
+        private void SetInitialLocation()
+        {
+            _iniLocation = _temp_IniLocation;
+        }
+
+        //Set InitialLocation
+        private ICommand _command_SetTempInitialLocation = null;
+
+        public ICommand Command_SetTempInitialLocation
+        {
+            get
+            {
+                if (_command_SetTempInitialLocation == null)
+                {
+                    _command_SetTempInitialLocation = 
+                        new RelayCommand<System.Windows.Input.MouseButtonEventArgs>
+                            (new Action<System.Windows.Input.MouseButtonEventArgs>(SetTempInitialLocation));
+                }
+                return _command_SetTempInitialLocation;
+            }
+        }
+
+        /// <summary>
+        /// 初期開始位置の仮取得
+        /// </summary>
+        /// <param name="e"></param>
+        private void SetTempInitialLocation(System.Windows.Input.MouseButtonEventArgs e)
+        {
+            Map map = (Map)e.Source;
+            //Map map = (Map)sender;
+
+            Point pt = e.GetPosition(map);
+
+            Location loc = null;
+            if (map.TryViewportPointToLocation(pt, out loc))
+            {
+                _temp_IniLocation = loc;
+            }
+        }
+
 
         #endregion
 
