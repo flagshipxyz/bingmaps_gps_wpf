@@ -142,12 +142,8 @@
     <Content Include="Document\Content\bootstrap.css">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Document\Images\prototype\bingmaps_gps_how.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Document\Images\prototype\bingmaps_gps_how_7.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
+    <Resource Include="Document\Images\prototype\bingmaps_gps_10.jpg" />
+    <Resource Include="Document\Images\prototype\bingmaps_gps_11_2.jpg" />
     <Content Include="Document\what.html">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

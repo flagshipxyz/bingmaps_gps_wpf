@@ -1,4 +1,7 @@
-﻿<!DOCTYPE html>
+﻿
+
+
+<!DOCTYPE html>
 <html>
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -9,13 +12,16 @@
 
 
     <link href="Content/bootstrap.css" rel="stylesheet" />
-    <!--<link href="/Content/site.css" rel="stylesheet" />-->
-    <!--<link href="/Content/bootstrap-lightbox/bootstrap-lightbox.min.css" rel="stylesheet">-->
 
 </head>
 <body>
 
+
+
     <div class="container body-content">
+
+
+
 
 
         <h2>BingMaps+GPS WPF</h2>
@@ -27,11 +33,14 @@
         </style>
 
 
-        <a href="Images/prototype/bingmaps_gps_how.png" target="_blank">
-            <img src="Images/prototype/bingmaps_gps_how.png" style="width:600px">
-        </a>
 
-        <br />
+
+
+        <p>
+            <img src="Images/prototype/bingmaps_gps_10.jpg" alt="" width="60%"
+                 class="img-thumbnail" >
+        </p>
+
         BingMapsを利用したGPSロガーアプリケーション
         <br />
         <br />
@@ -69,10 +78,17 @@
                 <td></td>
             </tr>
             <tr>
+                <td>　</td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
                 <td>GPS</td>
                 <td>内蔵型以外にも外部接続型でも可。</td>
                 <td>
-                    外部接続のドライバがセンサーAPI対応のものでない場合については、COMポート出力をセンサーAPIにバイパスする下のようなドライバが必要です。
+                    外部接続型については、ドライバがセンサーAPI対応のものであることが必要です。
+                    <br />
+                    もし付属のドライバがセンサーAPIに対応していない場合は、COMポート出力をセンサーAPIにバイパスする下のようなドライバが必要です。
                     <br />
                     <br />
                     Welcome to GPSDirect and GPSReverse GPS NMEA Windows 7 Windows 8 Windows 10 Sensor Driver iOS Android TCP
@@ -84,12 +100,27 @@
         </table>
 
         <br />
+        <p></p>
+        <p>
+            <a class="btn btn-lg btn-primary" href="/File/BingMaps_GPS_WPF.zip" role="button" target="_blank">
+                <i class="fa fa-download"></i>&nbsp;&nbsp;ダウンロード
+            </a>
+
+            <a class="btn btn-lg btn-primary" href="https://github.com/flagshipxyz/bingmaps_gps_wpf" role="button" target="_blank">
+                <i class="fa fa-download"></i>&nbsp;&nbsp;ソースコード
+            </a>
+        </p>
+
+        <br />
+
+        <br />
         <br />
 
 
-        
-        <a href="Images/prototype/bingmaps_gps_how_7.png" target="_blank">
-        <img src="Images/prototype/bingmaps_gps_how_7.png" style="width:600px"></a>
+        <p>
+            <img src="Images/prototype/bingmaps_gps_11_2.jpg" alt="" width="60%"
+                 class="img-thumbnail" >
+        </p>
 
 
         <br />
@@ -106,18 +137,18 @@
             </tr>
             <tr>
                 <td></td>
-                <td>GetPosition</td>
+                <td>Get Position</td>
                 <td>現在地の表示を行います。</td>
             </tr>
             <tr>
                 <td></td>
-                <td>StartLogging</td>
+                <td>Start Logging</td>
                 <td>移動記録の開始と終了を実行します。</td>
             </tr>
             <tr>
                 <td></td>
                 <td>Log</td>
-                <td>StartLoggingで記録されたファイルを読み込み、その記録を②のログパネルに表示します。</td>
+                <td>StartLoggingで記録されたファイルを読み込み、その記録内容を②のログパネルに表示します。</td>
             </tr>
             <tr>
                 <td></td>
@@ -157,6 +188,11 @@
                     <br />
                     <a href="https://www.bingmapsportal.com/" target="_blank">https://www.bingmapsportal.com/</a>
                 </td>
+            </tr>
+            <tr>
+                <td>　</td>
+                <td></td>
+                <td></td>
             </tr>
             <tr>
                 <td>　</td>
@@ -213,6 +249,11 @@
             </tr>
             <tr>
                 <td>　</td>
+                <td>ZoomLevel</td>
+                <td>地図のズームレベルを表します。</td>
+            </tr>
+            <tr>
+                <td>　</td>
                 <td></td>
                 <td></td>
             </tr>
@@ -228,13 +269,28 @@
             </tr>
             <tr>
                 <td>　</td>
-                <td>Show Status</td>
-                <td>④ステータスパネルの表示・非表示を切り替えます。</td>
+                <td>Set InitialLocation</td>
+                <td>起動時の地図の表示位置をメニューを開いた場所に設定します。</td>
             </tr>
+            Show SettingPanel
             <tr>
                 <td>　</td>
                 <td>Show LogPanel</td>
                 <td>②ログパネルの表示・非表示を切り替えます。</td>
+            </tr>
+            <tr>
+                <td>　</td>
+                <td>Show SettingPanel</td>
+                <td>
+                    ③設定パネルの表示・非表示を切り替えます。
+                    <br />
+                    （①Setting ボタンと同じです。）
+                </td>
+            </tr>
+            <tr>
+                <td>　</td>
+                <td>Show Status</td>
+                <td>④ステータスパネルの表示・非表示を切り替えます。</td>
             </tr>
         </table>
 
@@ -245,6 +301,7 @@
             <p>&copy; 2014 - flagship</p>
         </footer>
     </div>
+
 
 
 </body>
