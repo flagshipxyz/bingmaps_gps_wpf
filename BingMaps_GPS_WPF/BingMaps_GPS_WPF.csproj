@@ -79,7 +79,6 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="Command\RelayCommand.cs" />
     <Compile Include="Common\CommonApp.cs" />
     <Compile Include="Common\Consts.cs" />
     <Compile Include="Base\DisposableModelBase.cs" />
